@@ -88,5 +88,13 @@ private fun BookRow(book: Book) {
             text = book.authors,
             style = MaterialTheme.typography.bodyMedium
         )
+        Text(
+            text = "Язык: ${book.language}",
+            style = MaterialTheme.typography.bodySmall
+        )
+        Text(
+            text = "Комната: ${book.locationLevel1}",
+            style = MaterialTheme.typography.bodySmall
+        )
     }
 }

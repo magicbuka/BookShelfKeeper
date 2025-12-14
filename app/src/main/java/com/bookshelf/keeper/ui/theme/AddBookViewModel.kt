@@ -16,9 +16,9 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
         repo = BookRepository(dao)
     }
 
-    fun saveBook(title: String, authors: String) {
+    fun saveBook(title: String, authors: String, locationLevel1: String) {
         viewModelScope.launch {
-            repo.addBook(title, authors)
+            repo.addBook(title, authors, locationLevel1)
         }
     }
 }

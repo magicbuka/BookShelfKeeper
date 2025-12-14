@@ -21,7 +21,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.bookshelf.keeper.ui.common.clearFocusOnTapOutside
 import androidx.lifecycle.viewmodel.compose.viewModel
+
+private const val MAX_TITLE_LENGTH = 255
+private const val MAX_AUTHORS_LENGTH = 255
+private const val MAX_LOCATION_LEVEL1_LENGTH = 100
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,6 +36,7 @@ fun AddBookScreen(
 ) {
     var title by remember { mutableStateOf("") }
     var authors by remember { mutableStateOf("") }
+    var locationLevel1 by remember { mutableStateOf("") }  // Комната
 
     Scaffold(
         topBar = {
@@ -52,18 +58,40 @@ fun AddBookScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
+                .clearFocusOnTapOutside()
         ) {
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = { newValue ->
+                    if (newValue.length <= MAX_TITLE_LENGTH) {
+                        title = newValue
+                    }
+                },
                 label = { Text("Название") },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = authors,
-                onValueChange = { authors = it },
+                onValueChange = { newValue ->
+                    if (newValue.length <= MAX_AUTHORS_LENGTH) {
+                        authors = newValue
+                    }
+                },
                 label = { Text("Автор(ы)") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+
+            OutlinedTextField(
+                value = locationLevel1,
+                onValueChange = { newValue ->
+                    if (newValue.length <= MAX_LOCATION_LEVEL1_LENGTH) {
+                        locationLevel1 = newValue
+                    }
+                },
+                label = { Text("Комната *") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
@@ -71,10 +99,12 @@ fun AddBookScreen(
 
             Button(
                 onClick = {
-                    viewModel.saveBook(title, authors)
+                    viewModel.saveBook(title, authors, locationLevel1)
                     onBackClick()
                 },
-                enabled = title.isNotBlank() && authors.isNotBlank(),
+                enabled = title.isNotBlank() &&
+                        authors.isNotBlank() &&
+                        locationLevel1.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)

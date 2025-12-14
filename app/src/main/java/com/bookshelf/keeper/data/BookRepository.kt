@@ -5,13 +5,13 @@ class BookRepository(
 ) {
     val allBooks = dao.getAllBooks()
 
-    suspend fun addBook(title: String, authors: String) {
+    suspend fun addBook(title: String, authors: String, locationLevel1: String) {
         val book = Book(
             title = title,
             authors = authors,
             language = "RU",          // временно захардкожено
             genre = null,
-            locationLevel1 = "Кабинет",
+            locationLevel1 = locationLevel1,
             locationLevel2 = null,
             locationLevel3 = null,
             locationLevel4 = null,
