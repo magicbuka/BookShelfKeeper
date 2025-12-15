@@ -22,4 +22,10 @@ interface BookDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBook(book: Book)
+
+    @Query("SELECT DISTINCT locationLevel1 FROM books ORDER BY locationLevel1")
+    fun getAllRooms(): kotlinx.coroutines.flow.Flow<List<String>>
+
+    @Query("SELECT DISTINCT language FROM books ORDER BY language")
+    fun getAllLanguages(): kotlinx.coroutines.flow.Flow<List<String>>
 }
