@@ -83,8 +83,10 @@ fun AddBookScreen(
             OutlinedTextField(
                 value = title,
                 onValueChange = { newValue ->
-                    if (newValue.length <= MAX_TITLE_LENGTH) {
-                        title = newValue
+                    title = if (newValue.length <= MAX_TITLE_LENGTH) {
+                        newValue
+                    } else {
+                        newValue.take(MAX_TITLE_LENGTH)
                     }
                 },
                 label = { Text("Название") },
@@ -94,8 +96,10 @@ fun AddBookScreen(
             OutlinedTextField(
                 value = authors,
                 onValueChange = { newValue ->
-                    if (newValue.length <= MAX_AUTHORS_LENGTH) {
-                        authors = newValue
+                    authors = if (newValue.length <= MAX_AUTHORS_LENGTH) {
+                        newValue
+                    } else {
+                        newValue.take(MAX_AUTHORS_LENGTH)
                     }
                 },
                 label = { Text("Автор(ы)") },
@@ -193,7 +197,12 @@ fun AddBookScreen(
                 OutlinedTextField(
                     value = locationLevel1,
                     onValueChange = { newValue ->
-                        locationLevel1 = newValue
+                        val limited = if (newValue.length <= MAX_LOCATION_LEVEL1_LENGTH) {
+                            newValue
+                        } else {
+                            newValue.take(MAX_LOCATION_LEVEL1_LENGTH)
+                        }
+                        locationLevel1 = limited
                         isRoomDropdownExpanded = roomSuggestions.isNotEmpty()
                     },
                     label = { Text("Комната") },
