@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -26,6 +27,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookshelf.keeper.ui.common.clearFocusOnTapOutside
@@ -90,7 +92,10 @@ fun AddBookScreen(
                     }
                 },
                 label = { Text("Название") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words
+                )
             )
 
             OutlinedTextField(
@@ -105,7 +110,10 @@ fun AddBookScreen(
                 label = { Text("Автор(ы)") },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 8.dp)
+                    .padding(top = 8.dp),
+                keyboardOptions = KeyboardOptions(
+                    capitalization = KeyboardCapitalization.Words
+                )
             )
 
             // --- Автодополнение языка ---
