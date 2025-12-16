@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,7 +29,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookshelf.keeper.ui.common.clearFocusOnTapOutside
-import androidx.compose.material.icons.filled.Check
 
 
 private const val MAX_TITLE_LENGTH = 255
@@ -116,8 +116,9 @@ fun AddBookScreen(
                     value = languageInput,
                     onValueChange = { newValue ->
                         languageInput = newValue
+                        isLanguageExpanded = true     // открываем список при вводе
                     },
-                    label = { Text("Language") },
+                    label = { Text("Язык") },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth(),
@@ -129,35 +130,40 @@ fun AddBookScreen(
 
                 val query = languageInput.trim()
 
-                val (exact, partial) = languageSuggestions.partition { item ->
-                    query.isNotEmpty() && (
+                // 1) если поле пустое ИЛИ содержит полное значение "Name (code)" — показываем ВЕСЬ список;
+                // 2) иначе фильтруем по коду/названию.
+                val filteredSuggestions =
+                    if (query.isEmpty() || query.endsWith(")")) {
+                        languageSuggestions
+                    } else {
+                        val exact = languageSuggestions.filter { item ->
                             item.code.equals(query, ignoreCase = true) ||
                                     item.name.equals(query, ignoreCase = true)
-                            )
-                }
-
-                val filteredSuggestions = (exact + partial).filter { item ->
-                    query.isBlank() ||
+                        }
+                        val partial = languageSuggestions.filter { item ->
                             item.code.contains(query, ignoreCase = true) ||
-                            item.name.contains(query, ignoreCase = true)
-                }
+                                    item.name.contains(query, ignoreCase = true)
+                        }
+                        (exact + partial).distinctBy { it.code }
+                    }
 
                 ExposedDropdownMenu(
                     expanded = isLanguageExpanded && filteredSuggestions.isNotEmpty(),
                     onDismissRequest = { isLanguageExpanded = false }
                 ) {
                     filteredSuggestions.forEach { item ->
+                        val displayText = "${item.name} (${item.code})"
                         DropdownMenuItem(
-                            text = { Text("${item.name} (${item.code})") },
+                            text = { Text(displayText) },
                             onClick = {
-                                selectedLanguageCode = item.code
-                                languageInput = "${item.name} (${item.code})"
+                                selectedLanguageCode = item.code           // в БД идёт код
+                                languageInput = displayText                // в поле показываем Name (code)
                                 isLanguageExpanded = false
                             },
                             leadingIcon = {
                                 if (item.code.equals(selectedLanguageCode, ignoreCase = true)) {
                                     Icon(
-                                        imageVector = Icons.Default.Check,
+                                        imageVector = Icons.Filled.Check,
                                         contentDescription = null
                                     )
                                 }
@@ -190,7 +196,7 @@ fun AddBookScreen(
                         locationLevel1 = newValue
                         isRoomDropdownExpanded = roomSuggestions.isNotEmpty()
                     },
-                    label = { Text("Комната *") },
+                    label = { Text("Комната") },
                     modifier = Modifier
                         .menuAnchor()
                         .fillMaxWidth()
@@ -224,7 +230,8 @@ fun AddBookScreen(
                 },
                 enabled = title.isNotBlank() &&
                         authors.isNotBlank() &&
-                        locationLevel1.isNotBlank(),
+                        locationLevel1.isNotBlank() &&
+                        selectedLanguageCode.isNotBlank(),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 16.dp)
