@@ -31,6 +31,7 @@ import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookshelf.keeper.ui.common.clearFocusOnTapOutside
+import androidx.compose.runtime.LaunchedEffect
 
 
 private const val MAX_TITLE_LENGTH = 255
@@ -41,8 +42,13 @@ private const val MAX_LOCATION_LEVEL1_LENGTH = 100
 @Composable
 fun AddBookScreen(
     onBackClick: () -> Unit,
+    bookId: Long? = null,
     viewModel: AddBookViewModel = viewModel()
 ) {
+
+    val loadedBookState = viewModel.loadedBook.collectAsState()
+    val loadedBook = loadedBookState.value
+
     var title by remember { mutableStateOf("") }
     var authors by remember { mutableStateOf("") }
 
@@ -60,10 +66,29 @@ fun AddBookScreen(
     val roomsState = viewModel.rooms.collectAsState()
     val allRooms = roomsState.value
 
+    // если пришёл bookId и книга ещё не загружена — инициируем загрузку
+    LaunchedEffect(bookId) {
+        if (bookId != null) {
+            viewModel.loadBook(bookId)
+        }
+    }
+
+    // когда loadedBook меняется впервые — заполняем поля
+    LaunchedEffect(loadedBook) {
+        loadedBook?.let { book ->
+            title = book.title
+            authors = book.authors
+            locationLevel1 = book.locationLevel1
+            selectedLanguageCode = book.language
+            languageInput = ""  // показываем выбранный язык как выбранный, а не в текстовом поле
+        }
+    }
+
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Добавить книгу") },
+                title = { Text(if (bookId != null) "Редактировать книгу" else "Добавить книгу") },
                 navigationIcon = {
                     IconButton(onClick = onBackClick) {
                         Icon(
@@ -235,14 +260,25 @@ fun AddBookScreen(
                 }
             }
 
+            val isEditMode = bookId != null
+
             Button(
                 onClick = {
-                    viewModel.saveBook(
-                        title = title,
-                        authors = authors,
-                        locationLevel1 = locationLevel1,
-                        language = selectedLanguageCode
-                    )
+                    if (isEditMode) {
+                        viewModel.updateBook(
+                            title = title,
+                            authors = authors,
+                            locationLevel1 = locationLevel1,
+                            language = selectedLanguageCode
+                        )
+                    } else {
+                        viewModel.saveBook(
+                            title = title,
+                            authors = authors,
+                            locationLevel1 = locationLevel1,
+                            language = selectedLanguageCode
+                        )
+                    }
                     onBackClick()
                 },
                 enabled = title.isNotBlank() &&
@@ -253,7 +289,7 @@ fun AddBookScreen(
                     .fillMaxWidth()
                     .padding(top = 16.dp)
             ) {
-                Text("Сохранить")
+                Text(if (isEditMode) "Сохранить изменения" else "Добавить книгу")
             }
         }
     }

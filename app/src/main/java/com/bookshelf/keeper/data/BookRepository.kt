@@ -1,12 +1,12 @@
 package com.bookshelf.keeper.data
 
+import kotlinx.coroutines.flow.Flow
+
 class BookRepository(
     private val dao: BookDao
 ) {
     val allBooks = dao.getAllBooks()
-
     val allRooms = dao.getAllRooms()
-
     val allLanguages = dao.getAllLanguages()
 
     suspend fun addBook(
@@ -29,4 +29,8 @@ class BookRepository(
         )
         dao.insertBook(book)
     }
+
+    fun getBookById(id: Long): Flow<Book?> = dao.getBookById(id)
+    suspend fun updateBook(book: Book) = dao.updateBook(book)
+    suspend fun deleteBook(book: Book) = dao.deleteBook(book)
 }

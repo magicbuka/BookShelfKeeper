@@ -1,6 +1,7 @@
 package com.bookshelf.keeper.ui
 import com.bookshelf.keeper.data.LanguageItem
 import com.bookshelf.keeper.data.Iso639_1Languages
+import com.bookshelf.keeper.data.Book
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
@@ -13,15 +14,18 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
-
-
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 
 
 class AddBookViewModel(app: Application) : AndroidViewModel(app) {
 
     private val repo: BookRepository
+    private var currentBookId: Long? = null
+    private val _loadedBook = MutableStateFlow<Book?>(null)
 
     val rooms: StateFlow<List<String>>
+    val loadedBook: StateFlow<Book?> = _loadedBook
 
     // Уже использованные коды языков из БД
     val usedLanguages: StateFlow<List<String>>
@@ -68,6 +72,42 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
     ) {
         viewModelScope.launch {
             repo.addBook(title, authors, locationLevel1, language)
+        }
+    }
+
+    fun loadBook(bookId: Long) {
+        currentBookId = bookId
+        viewModelScope.launch {
+            repo.getBookById(bookId).collect { book ->
+                if (book != null) {
+                    _loadedBook.value = book
+                }
+            }
+        }
+    }
+
+    fun updateBook(
+        title: String,
+        authors: String,
+        locationLevel1: String,
+        language: String
+    ) {
+        val id = currentBookId ?: return
+
+        viewModelScope.launch {
+            val updated = Book(
+                id = id,
+                title = title,
+                authors = authors,
+                language = language,
+                locationLevel1 = locationLevel1,
+                locationLevel2 = null,
+                locationLevel3 = null,
+                locationLevel4 = null,
+                locationLevel5 = null,
+                readingStatus = "not_read"
+            )
+            repo.updateBook(updated)
         }
     }
 }

@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.clickable
 import androidx.compose.material3.FilterChip
 import com.bookshelf.keeper.data.Book
 
@@ -35,6 +36,7 @@ import com.bookshelf.keeper.ui.MAX_LANG_FILTER_CHIPS
 @Composable
 fun CatalogScreen(
     onAddBookClick: () -> Unit,
+    onBookClick: (Long) -> Unit,
     viewModel: CatalogViewModel = viewModel()
 ) {
     val booksState = viewModel.filteredBooks.collectAsState()
@@ -114,7 +116,10 @@ fun CatalogScreen(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         items(books) { book ->
-                            BookRow(book)
+                            BookRow(
+                                book = book,
+                                onClick = { onBookClick(book.id) }
+                            )
                         }
                     }
                 }
@@ -124,11 +129,15 @@ fun CatalogScreen(
 }
 
 @Composable
-private fun BookRow(book: Book) {
+private fun BookRow(
+    book: Book,
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 8.dp)
+            .clickable(onClick = onClick)
     ) {
         Text(
             text = book.title,
@@ -148,3 +157,4 @@ private fun BookRow(book: Book) {
         )
     }
 }
+

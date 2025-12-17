@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
+import androidx.room.Delete
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -20,12 +22,21 @@ interface BookDao {
     """)
     fun searchBooks(query: String): Flow<List<Book>>
 
+    @Query("SELECT * FROM books WHERE id = :id")
+    fun getBookById(id: Long): Flow<Book?>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertBook(book: Book)
+    suspend fun insertBook(book: Book): Long
 
-    @Query("SELECT DISTINCT locationLevel1 FROM books ORDER BY locationLevel1")
-    fun getAllRooms(): kotlinx.coroutines.flow.Flow<List<String>>
+    @Update
+    suspend fun updateBook(book: Book)
 
-    @Query("SELECT DISTINCT language FROM books ORDER BY language")
-    fun getAllLanguages(): kotlinx.coroutines.flow.Flow<List<String>>
+    @Delete
+    suspend fun deleteBook(book: Book)
+
+    @Query("SELECT DISTINCT locationLevel1 FROM books WHERE locationLevel1 != '' ORDER BY locationLevel1 ASC")
+    fun getAllRooms(): Flow<List<String>>
+
+    @Query("SELECT DISTINCT language FROM books WHERE language != '' ORDER BY language ASC")
+    fun getAllLanguages(): Flow<List<String>>
 }
