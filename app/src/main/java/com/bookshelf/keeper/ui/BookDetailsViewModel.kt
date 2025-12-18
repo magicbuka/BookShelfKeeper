@@ -27,8 +27,10 @@ class BookDetailsViewModel(
     val isDeleted: StateFlow<Boolean> = _isDeleted
 
     init {
-        val dao = AppDatabase.getDatabase(app).bookDao()
-        repo = BookRepository(dao)
+        val db = AppDatabase.getDatabase(app)
+        val dao = db.bookDao()
+        val locationDao = db.locationDao()
+        repo = BookRepository(dao, locationDao)
 
         book = repo.getBookById(bookId)
             .stateIn(

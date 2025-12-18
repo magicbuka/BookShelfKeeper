@@ -33,8 +33,10 @@ class CatalogViewModel(app: Application) : AndroidViewModel(app) {
     val rooms: StateFlow<List<String>>
 
     init {
-        val dao = AppDatabase.getDatabase(app).bookDao()
-        repo = BookRepository(dao)
+        val db = AppDatabase.getDatabase(app)
+        val dao = db.bookDao()
+        val locationDao = db.locationDao()
+        repo = BookRepository(dao, locationDao)
 
         books = repo.allBooks.stateIn(
             scope = viewModelScope,

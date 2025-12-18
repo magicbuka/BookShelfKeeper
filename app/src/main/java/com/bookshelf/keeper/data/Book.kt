@@ -10,7 +10,7 @@ data class Book(
 
     val title: String,
     val authors: String,
-    val language: String,      // "RU", "EN", "ZH"
+    val language: String,      // "ru", "en", "zh"
     val genre: String? = null,
 
     // ГИБКАЯ ЛОКАЦИЯ: 5 уровней
@@ -19,6 +19,7 @@ data class Book(
     val locationLevel3: String?,  // Полка / Ряд
     val locationLevel4: String?,  // Ряд / Позиция
     val locationLevel5: String?,  // Позиция / доп. деталь
+    val readingStatus: String,     // "not_read", "reading", "read"
 
-    val readingStatus: String     // "not_read", "reading", "read"
+    val locationId: Long? = null
 )

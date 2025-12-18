@@ -33,10 +33,12 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
     val languageSuggestions: StateFlow<List<LanguageItem>>
 
     init {
-        val dao = AppDatabase.getDatabase(app).bookDao()
-        repo = BookRepository(dao)
+        val db = AppDatabase.getDatabase(app)
+        val dao = db.bookDao()
+        val locationDao = db.locationDao()
+        repo = BookRepository(dao, locationDao)
 
-        rooms = repo.allRooms.stateIn(
+        rooms = repo.allRootLocationNames.stateIn(
             scope = viewModelScope,
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
