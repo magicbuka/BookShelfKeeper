@@ -80,7 +80,16 @@ fun AddBookScreen(
             authors = book.authors
             locationLevel1 = book.locationLevel1
             selectedLanguageCode = book.language
-            languageInput = ""  // показываем выбранный язык как выбранный, а не в текстовом поле
+
+            // Найти LanguageItem по коду (из существующих подсказок или общего списка)
+            val allLanguages = viewModel.languageSuggestions.value
+            val match = allLanguages.firstOrNull { it.code.equals(book.language, ignoreCase = true) }
+
+            languageInput = if (match != null) {
+                "${match.name} (${match.code})"
+            } else {
+                book.language.uppercase()  // fallback, если что-то пойдёт не так
+            }
         }
     }
 
@@ -119,7 +128,7 @@ fun AddBookScreen(
                 label = { Text("Название") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words
+                    capitalization = KeyboardCapitalization.Sentences
                 )
             )
 
