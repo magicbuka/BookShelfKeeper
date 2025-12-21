@@ -4,10 +4,10 @@
     <selectionStates>
       <SelectionState runConfigName="app">
         <option name="selectionMode" value="DROPDOWN" />
-        <DropdownSelection timestamp="2025-12-18T19:32:45.670908Z">
+        <DropdownSelection timestamp="2025-12-19T17:20:45.340286600Z">
           <Target type="DEFAULT_BOOT">
             <handle>
-              <DeviceId pluginId="LocalEmulator" identifier="path=C:\Users\Magicbuka\.android\avd\HH_progect.avd" />
+              <DeviceId pluginId="PhysicalDevice" identifier="serial=3b2efc54" />
             </handle>
           </Target>
         </DropdownSelection>
