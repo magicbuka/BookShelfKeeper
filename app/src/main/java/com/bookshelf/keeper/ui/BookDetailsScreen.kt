@@ -106,8 +106,14 @@ fun BookDetailsScreen(
                     text = "Язык: ${book.language}",
                     style = MaterialTheme.typography.bodyMedium
                 )
+                val locationText = if (book.locationLevel2.isNullOrBlank()) {
+                    "Расположение: ${book.locationLevel1}"
+                } else {
+                    "Расположение: ${book.locationLevel1} / ${book.locationLevel2}"
+                }
+
                 Text(
-                    text = "Комната: ${book.locationLevel1}",
+                    text = locationText,
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

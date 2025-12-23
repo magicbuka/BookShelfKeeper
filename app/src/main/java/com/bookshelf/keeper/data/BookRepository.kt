@@ -21,9 +21,20 @@ class BookRepository(
         title: String,
         authors: String,
         locationLevel1: String,
-        language: String
+        language: String,
+        locationLevel2: String? = null,
+        locationLevel3: String? = null,
+        locationLevel4: String? = null,
+        locationLevel5: String? = null
     ) {
-        val location = getOrCreateRootLocation(locationLevel1)
+        // Строим путь до максимально указанного уровня
+        val finalLocation = getOrCreateLocationPath(
+            level1 = locationLevel1,
+            level2 = locationLevel2,
+            level3 = locationLevel3,
+            level4 = locationLevel4,
+            level5 = locationLevel5
+        )
 
         val book = Book(
             title = title,
@@ -31,12 +42,12 @@ class BookRepository(
             language = language,
             genre = null,
             locationLevel1 = locationLevel1,
-            locationLevel2 = null,
-            locationLevel3 = null,
-            locationLevel4 = null,
-            locationLevel5 = null,
+            locationLevel2 = locationLevel2,
+            locationLevel3 = locationLevel3,
+            locationLevel4 = locationLevel4,
+            locationLevel5 = locationLevel5,
             readingStatus = "not_read",
-            locationId = location.id
+            locationId = finalLocation.id
         )
 
         dao.insertBook(book)
@@ -44,8 +55,14 @@ class BookRepository(
 
     fun getBookById(id: Long): Flow<Book?> = dao.getBookById(id)
     suspend fun updateBook(book: Book) {
-        val location = getOrCreateRootLocation(book.locationLevel1)
-        val bookWithLocation = book.copy(locationId = location.id)
+        val finalLocation = getOrCreateLocationPath(
+            level1 = book.locationLevel1,
+            level2 = book.locationLevel2,
+            level3 = book.locationLevel3,
+            level4 = book.locationLevel4,
+            level5 = book.locationLevel5
+        )
+        val bookWithLocation = book.copy(locationId = finalLocation.id)
         dao.updateBook(bookWithLocation)
     }
     suspend fun deleteBook(book: Book) = dao.deleteBook(book)
@@ -61,5 +78,50 @@ class BookRepository(
         val newLocation = Location(name = trimmed, parentId = null)
         val newId = locationDao.insertAndReturnId(newLocation)
         return newLocation.copy(id = newId)
+    }
+    private suspend fun getOrCreateLocationPath(
+        level1: String,
+        level2: String?,
+        level3: String?,
+        level4: String?,
+        level5: String?
+    ): Location {
+        val root = getOrCreateRootLocation(level1)
+
+        var currentParent: Location = root
+
+        fun normalizeOrNull(value: String?): String? {
+            val trimmed = value?.trim()
+            return if (trimmed.isNullOrEmpty()) null else trimmed
+        }
+
+        val levels = listOf(
+            normalizeOrNull(level2),
+            normalizeOrNull(level3),
+            normalizeOrNull(level4),
+            normalizeOrNull(level5)
+        )
+
+        for (name in levels) {
+            if (name == null) continue
+
+            val existing = locationDao.getLocationByNameAndParent(
+                name = name,
+                parentId = currentParent.id
+            )
+            if (existing != null) {
+                currentParent = existing
+                continue
+            }
+
+            val newLocation = Location(
+                name = name,
+                parentId = currentParent.id
+            )
+            val newId = locationDao.insertAndReturnId(newLocation)
+            currentParent = newLocation.copy(id = newId)
+        }
+
+        return currentParent
     }
 }

@@ -62,6 +62,7 @@ fun AddBookScreen(
     val languageSuggestions = languageSuggestionsState.value
 
     var locationLevel1 by remember { mutableStateOf("") }
+    var locationLevel2 by remember { mutableStateOf("") }
     var isRoomDropdownExpanded by remember { mutableStateOf(false) }
     val roomsState = viewModel.rooms.collectAsState()
     val allRooms = roomsState.value
@@ -79,6 +80,7 @@ fun AddBookScreen(
             title = book.title
             authors = book.authors
             locationLevel1 = book.locationLevel1
+            locationLevel2 = book.locationLevel2 ?: ""
             selectedLanguageCode = book.language
 
             // Найти LanguageItem по коду (из существующих подсказок или общего списка)
@@ -269,6 +271,17 @@ fun AddBookScreen(
                 }
             }
 
+            OutlinedTextField(
+                value = locationLevel2,
+                onValueChange = { newValue ->
+                    locationLevel2 = newValue.take(100)
+                },
+                label = { Text("Шкаф / полка") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp)
+            )
+
             val isEditMode = bookId != null
 
             Button(
@@ -278,14 +291,16 @@ fun AddBookScreen(
                             title = title,
                             authors = authors,
                             locationLevel1 = locationLevel1,
-                            language = selectedLanguageCode
+                            language = selectedLanguageCode,
+                            locationLevel2 = locationLevel2.ifBlank { null }
                         )
                     } else {
                         viewModel.saveBook(
                             title = title,
                             authors = authors,
                             locationLevel1 = locationLevel1,
-                            language = selectedLanguageCode
+                            language = selectedLanguageCode,
+                            locationLevel2 = locationLevel2.ifBlank { null }
                         )
                     }
                     onBackClick()

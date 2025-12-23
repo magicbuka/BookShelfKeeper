@@ -70,10 +70,17 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
         title: String,
         authors: String,
         locationLevel1: String,
-        language: String
+        language: String,
+        locationLevel2: String?
     ) {
         viewModelScope.launch {
-            repo.addBook(title, authors, locationLevel1, language)
+            repo.addBook(
+                title = title,
+                authors = authors,
+                locationLevel1 = locationLevel1,
+                language = language,
+                locationLevel2 = locationLevel2
+            )
         }
     }
 
@@ -92,10 +99,10 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
         title: String,
         authors: String,
         locationLevel1: String,
-        language: String
+        language: String,
+        locationLevel2: String?
     ) {
         val id = currentBookId ?: return
-
         viewModelScope.launch {
             val updated = Book(
                 id = id,
@@ -103,7 +110,7 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
                 authors = authors,
                 language = language,
                 locationLevel1 = locationLevel1,
-                locationLevel2 = null,
+                locationLevel2 = locationLevel2,
                 locationLevel3 = null,
                 locationLevel4 = null,
                 locationLevel5 = null,

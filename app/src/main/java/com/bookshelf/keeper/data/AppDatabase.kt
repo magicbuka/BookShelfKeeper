@@ -35,6 +35,17 @@ abstract class AppDatabase : RoomDatabase() {
         @Query("SELECT * FROM locations WHERE name = :name AND parentId IS NULL LIMIT 1")
         abstract suspend fun getRootLocationByName(name: String): Location?
 
+        @Query(
+            "SELECT * FROM locations " +
+                    "WHERE name = :name AND " +
+                    "((:parentId IS NULL AND parentId IS NULL) OR parentId = :parentId) " +
+                    "LIMIT 1"
+        )
+        abstract suspend fun getLocationByNameAndParent(
+            name: String,
+            parentId: Long?
+        ): Location?
+
         @Query("SELECT * FROM locations WHERE id = :id")
         abstract suspend fun getLocationById(id: Long): Location?
     }
