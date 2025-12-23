@@ -15,7 +15,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.flatMapLatest
+
 
 
 class AddBookViewModel(app: Application) : AndroidViewModel(app) {
@@ -32,6 +33,9 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
     // Список подсказок: сначала языки, уже встречающиеся в БД, затем остальные из справочника
     val languageSuggestions: StateFlow<List<LanguageItem>>
 
+    private val _currentRoom = MutableStateFlow<String?>(null)
+    val level2Suggestions: StateFlow<List<String>>
+
     init {
         val db = AppDatabase.getDatabase(app)
         val dao = db.bookDao()
@@ -43,6 +47,20 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
             started = SharingStarted.WhileSubscribed(5_000),
             initialValue = emptyList()
         )
+
+        level2Suggestions = _currentRoom
+            .flatMapLatest { room ->
+                if (room.isNullOrBlank()) {
+                    flowOf(emptyList())
+                } else {
+                    repo.getLevel2SuggestionsForRoom(room)
+                }
+            }
+            .stateIn(
+                scope = viewModelScope,
+                started = SharingStarted.WhileSubscribed(5_000),
+                initialValue = emptyList()
+            )
 
         usedLanguages = repo.allLanguages.stateIn(
             scope = viewModelScope,
@@ -118,5 +136,9 @@ class AddBookViewModel(app: Application) : AndroidViewModel(app) {
             )
             repo.updateBook(updated)
         }
+    }
+
+    fun onRoomChanged(room: String) {
+        _currentRoom.value = room
     }
 }

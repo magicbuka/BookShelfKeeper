@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.bookshelf.keeper.data.formattedLocation
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -106,14 +107,9 @@ fun BookDetailsScreen(
                     text = "Язык: ${book.language}",
                     style = MaterialTheme.typography.bodyMedium
                 )
-                val locationText = if (book.locationLevel2.isNullOrBlank()) {
-                    "Расположение: ${book.locationLevel1}"
-                } else {
-                    "Расположение: ${book.locationLevel1} / ${book.locationLevel2}"
-                }
 
                 Text(
-                    text = locationText,
+                    text = book.formattedLocation(),
                     style = MaterialTheme.typography.bodyMedium
                 )
             }

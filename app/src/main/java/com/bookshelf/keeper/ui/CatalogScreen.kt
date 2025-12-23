@@ -29,6 +29,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.clickable
 import androidx.compose.material3.FilterChip
 import com.bookshelf.keeper.data.Book
+import com.bookshelf.keeper.data.formattedLocation
 
 import com.bookshelf.keeper.ui.MAX_LANG_FILTER_CHIPS
 
@@ -151,14 +152,8 @@ private fun BookRow(
             text = "Язык: ${book.language}",
             style = MaterialTheme.typography.bodySmall
         )
-        val locationText = if (book.locationLevel2.isNullOrBlank()) {
-            "Расположение: ${book.locationLevel1}"
-        } else {
-            "Расположение: ${book.locationLevel1} / ${book.locationLevel2}"
-        }
-
         Text(
-            text = locationText,
+            text = book.formattedLocation(),
             style = MaterialTheme.typography.bodySmall
         )
     }

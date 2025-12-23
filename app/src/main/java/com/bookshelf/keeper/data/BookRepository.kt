@@ -17,6 +17,10 @@ class BookRepository(
         list.map { it.name }.distinct().sorted()
     }
 
+    fun getLevel2SuggestionsForRoom(room: String): Flow<List<String>> {
+        return dao.getLocationLevel2ForRoom(room)
+    }
+
     suspend fun addBook(
         title: String,
         authors: String,

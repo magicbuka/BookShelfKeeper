@@ -37,6 +37,7 @@ import androidx.compose.runtime.LaunchedEffect
 private const val MAX_TITLE_LENGTH = 255
 private const val MAX_AUTHORS_LENGTH = 255
 private const val MAX_LOCATION_LEVEL1_LENGTH = 100
+private const val MAX_LEVEL2_SUGGESTIONS = 7
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -66,6 +67,8 @@ fun AddBookScreen(
     var isRoomDropdownExpanded by remember { mutableStateOf(false) }
     val roomsState = viewModel.rooms.collectAsState()
     val allRooms = roomsState.value
+    val level2SuggestionsState = viewModel.level2Suggestions.collectAsState()
+    val allLevel2 = level2SuggestionsState.value
 
     // если пришёл bookId и книга ещё не загружена — инициируем загрузку
     LaunchedEffect(bookId) {
@@ -80,6 +83,7 @@ fun AddBookScreen(
             title = book.title
             authors = book.authors
             locationLevel1 = book.locationLevel1
+            viewModel.onRoomChanged(book.locationLevel1)
             locationLevel2 = book.locationLevel2 ?: ""
             selectedLanguageCode = book.language
 
@@ -247,6 +251,7 @@ fun AddBookScreen(
                             newValue.take(MAX_LOCATION_LEVEL1_LENGTH)
                         }
                         locationLevel1 = limited
+                        viewModel.onRoomChanged(locationLevel1)
                         isRoomDropdownExpanded = roomSuggestions.isNotEmpty()
                     },
                     label = { Text("Комната") },
@@ -264,6 +269,7 @@ fun AddBookScreen(
                             text = { Text(room) },
                             onClick = {
                                 locationLevel1 = room
+                                viewModel.onRoomChanged(room)
                                 isRoomDropdownExpanded = false
                             }
                         )
@@ -271,16 +277,51 @@ fun AddBookScreen(
                 }
             }
 
-            OutlinedTextField(
-                value = locationLevel2,
-                onValueChange = { newValue ->
-                    locationLevel2 = newValue.take(100)
+            val level2Filtered = allLevel2
+                .filter { it.contains(locationLevel2, ignoreCase = true) && it.isNotBlank() }
+                .sorted()
+                .take(MAX_LEVEL2_SUGGESTIONS)
+
+            var isLevel2DropdownExpanded by remember { mutableStateOf(false) }
+
+            ExposedDropdownMenuBox(
+                expanded = isLevel2DropdownExpanded && level2Filtered.isNotEmpty(),
+                onExpandedChange = {
+                    if (level2Filtered.isNotEmpty()) {
+                        isLevel2DropdownExpanded = !isLevel2DropdownExpanded
+                    }
                 },
-                label = { Text("Шкаф / полка") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(top = 8.dp)
-            )
+            ) {
+                OutlinedTextField(
+                    value = locationLevel2,
+                    onValueChange = { newValue ->
+                        locationLevel2 = newValue.take(100)
+                        isLevel2DropdownExpanded = level2Filtered.isNotEmpty()
+                    },
+                    label = { Text("Шкаф / полка") },
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                )
+
+                ExposedDropdownMenu(
+                    expanded = isLevel2DropdownExpanded && level2Filtered.isNotEmpty(),
+                    onDismissRequest = { isLevel2DropdownExpanded = false }
+                ) {
+                    level2Filtered.forEach { shelf ->
+                        DropdownMenuItem(
+                            text = { Text(shelf) },
+                            onClick = {
+                                locationLevel2 = shelf
+                                isLevel2DropdownExpanded = false
+                            }
+                        )
+                    }
+                }
+            }
 
             val isEditMode = bookId != null
 

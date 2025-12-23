@@ -39,4 +39,12 @@ interface BookDao {
 
     @Query("SELECT DISTINCT language FROM books WHERE language != '' ORDER BY language ASC")
     fun getAllLanguages(): Flow<List<String>>
+
+    @Query(
+        "SELECT DISTINCT locationLevel2 " +
+                "FROM books " +
+                "WHERE locationLevel1 = :room AND locationLevel2 IS NOT NULL AND locationLevel2 != '' " +
+                "ORDER BY locationLevel2 COLLATE NOCASE"
+    )
+    fun getLocationLevel2ForRoom(room: String): Flow<List<String>>
 }

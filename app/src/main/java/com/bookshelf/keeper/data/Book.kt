@@ -23,3 +23,11 @@ data class Book(
 
     val locationId: Long? = null
 )
+
+fun Book.formattedLocation(): String {
+    return if (locationLevel2.isNullOrBlank()) {
+        "Расположение: $locationLevel1"
+    } else {
+        "Расположение: $locationLevel1 / $locationLevel2"
+    }
+}
