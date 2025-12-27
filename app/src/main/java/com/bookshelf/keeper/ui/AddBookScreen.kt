@@ -32,6 +32,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.bookshelf.keeper.ui.common.clearFocusOnTapOutside
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.navigationBarsPadding
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.focus.FocusDirection
+import androidx.compose.foundation.text.KeyboardActions
 
 
 private const val MAX_TITLE_LENGTH = 255
@@ -69,6 +79,9 @@ fun AddBookScreen(
     val allRooms = roomsState.value
     val level2SuggestionsState = viewModel.level2Suggestions.collectAsState()
     val allLevel2 = level2SuggestionsState.value
+
+    val isEditMode = bookId != null
+    val focusManager = LocalFocusManager.current
 
     // если пришёл bookId и книга ещё не загружена — инициируем загрузку
     LaunchedEffect(bookId) {
@@ -113,13 +126,50 @@ fun AddBookScreen(
                     }
                 }
             )
+        },
+        bottomBar = {
+            Button(
+                onClick = {
+                    if (isEditMode) {
+                        viewModel.updateBook(
+                            title = title,
+                            authors = authors,
+                            locationLevel1 = locationLevel1,
+                            language = selectedLanguageCode,
+                            locationLevel2 = locationLevel2.ifBlank { null }
+                        )
+                    } else {
+                        viewModel.saveBook(
+                            title = title,
+                            authors = authors,
+                            locationLevel1 = locationLevel1,
+                            language = selectedLanguageCode,
+                            locationLevel2 = locationLevel2.ifBlank { null }
+                        )
+                    }
+                    onBackClick()
+                },
+                enabled = title.isNotBlank() &&
+                        authors.isNotBlank() &&
+                        locationLevel1.isNotBlank() &&
+                        selectedLanguageCode.isNotBlank(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                    .navigationBarsPadding()
+                    .imePadding()
+            ) {
+                Text(if (isEditMode) "Сохранить изменения" else "Добавить книгу")
+            }
         }
-    ) { padding ->
+    )
+    { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
                 .padding(16.dp)
+                .verticalScroll(rememberScrollState())
                 .clearFocusOnTapOutside()
         ) {
             OutlinedTextField(
@@ -134,7 +184,11 @@ fun AddBookScreen(
                 label = { Text("Название") },
                 modifier = Modifier.fillMaxWidth(),
                 keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Sentences
+                    capitalization = KeyboardCapitalization.Sentences,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 )
             )
 
@@ -152,7 +206,11 @@ fun AddBookScreen(
                     .fillMaxWidth()
                     .padding(top = 8.dp),
                 keyboardOptions = KeyboardOptions(
-                    capitalization = KeyboardCapitalization.Words
+                    capitalization = KeyboardCapitalization.Words,
+                    imeAction = ImeAction.Next
+                ),
+                keyboardActions = KeyboardActions(
+                    onNext = { focusManager.moveFocus(FocusDirection.Down) }
                 )
             )
 
@@ -177,7 +235,21 @@ fun AddBookScreen(
                     trailingIcon = {
                         ExposedDropdownMenuDefaults.TrailingIcon(expanded = isLanguageExpanded)
                     },
-                    singleLine = true
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Words,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            // если список открыт — закрываем
+                            if (isLanguageExpanded) {
+                                isLanguageExpanded = false
+                            }
+                            // переносим фокус на следующее поле (Комната)
+                            focusManager.moveFocus(FocusDirection.Down)
+                        }
+                    )
                 )
 
                 val query = languageInput.trim()
@@ -257,7 +329,21 @@ fun AddBookScreen(
                     label = { Text("Комната") },
                     modifier = Modifier
                         .menuAnchor()
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Next
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onNext = {
+                            // если меню открыто — закрываем, чтобы не мешало
+                            if (isRoomDropdownExpanded) {
+                                isRoomDropdownExpanded = false
+                            }
+                            // переносим фокус на следующее поле
+                            focusManager.moveFocus(FocusDirection.Down)
+                        }
+                    )
                 )
 
                 ExposedDropdownMenu(
@@ -304,7 +390,42 @@ fun AddBookScreen(
                     label = { Text("Шкаф / полка") },
                     modifier = Modifier
                         .menuAnchor()
-                        .fillMaxWidth()
+                        .fillMaxWidth(),
+                    keyboardOptions = KeyboardOptions(
+                        capitalization = KeyboardCapitalization.Sentences,
+                        imeAction = ImeAction.Done
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            if (title.isNotBlank() &&
+                                authors.isNotBlank() &&
+                                locationLevel1.isNotBlank() &&
+                                selectedLanguageCode.isNotBlank()
+                            ) {
+                                if (isEditMode) {
+                                    viewModel.updateBook(
+                                        title = title,
+                                        authors = authors,
+                                        locationLevel1 = locationLevel1,
+                                        language = selectedLanguageCode,
+                                        locationLevel2 = locationLevel2.ifBlank { null }
+                                    )
+                                } else {
+                                    viewModel.saveBook(
+                                        title = title,
+                                        authors = authors,
+                                        locationLevel1 = locationLevel1,
+                                        language = selectedLanguageCode,
+                                        locationLevel2 = locationLevel2.ifBlank { null }
+                                    )
+                                }
+                                onBackClick()
+                            } else {
+                                // если что‑то не заполнено — просто убираем фокус
+                                focusManager.clearFocus()
+                            }
+                        }
+                    )
                 )
 
                 ExposedDropdownMenu(
@@ -323,39 +444,8 @@ fun AddBookScreen(
                 }
             }
 
-            val isEditMode = bookId != null
+            Spacer(modifier = Modifier.height(80.dp))
 
-            Button(
-                onClick = {
-                    if (isEditMode) {
-                        viewModel.updateBook(
-                            title = title,
-                            authors = authors,
-                            locationLevel1 = locationLevel1,
-                            language = selectedLanguageCode,
-                            locationLevel2 = locationLevel2.ifBlank { null }
-                        )
-                    } else {
-                        viewModel.saveBook(
-                            title = title,
-                            authors = authors,
-                            locationLevel1 = locationLevel1,
-                            language = selectedLanguageCode,
-                            locationLevel2 = locationLevel2.ifBlank { null }
-                        )
-                    }
-                    onBackClick()
-                },
-                enabled = title.isNotBlank() &&
-                        authors.isNotBlank() &&
-                        locationLevel1.isNotBlank() &&
-                        selectedLanguageCode.isNotBlank(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 16.dp)
-            ) {
-                Text(if (isEditMode) "Сохранить изменения" else "Добавить книгу")
-            }
         }
     }
 }

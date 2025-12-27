@@ -13,8 +13,8 @@ android {
         applicationId = "com.bookshelf.keeper"
         minSdk = 24
         targetSdk = 35
-        versionCode = 10
-        versionName = "0.4.1"
+        versionCode = 11
+        versionName = "0.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
